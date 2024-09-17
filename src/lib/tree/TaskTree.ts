@@ -32,14 +32,12 @@ export enum Take {
  */
 export enum VisitState {
     OPEN, 
-    DONE, 
     ITERATION_DONE,
     ITERATION_CHILD_DONE,
 }
 
 export enum CollectionState {
     EMPTY,
-    COMPLETE,
     ITERATION_COMPLETE,
     ITERATION_CHILD_DONE,
     OPEN,
@@ -121,21 +119,6 @@ export class TaskTreeIterator {
         return this.visitCache.get(searchItem)?.iterator(this, childItems);
     }
 
-    setDone(id: number) {
-        const entry = this.visitCache.get(id);
-        if(entry) {
-            entry.visitState = VisitState.DONE
-        }
-    }
-
-    isDone(id: number) {
-        const entry = this.visitCache.get(id);
-        if(entry) {
-            return entry.visitState === VisitState.DONE
-        }
-        return false;
-    }
-
     setFiltered(id: number, value = true) {
         const entry = this.visitCache.get(id);
         if(entry) {
@@ -206,9 +189,6 @@ export class TaskTreeIterator {
         if(this.getAvailable(items).length>0){
             return CollectionState.OPEN;
         }
-        if(this.isComplete(items)) {
-            return CollectionState.COMPLETE;
-        }
         if(this.someIterationChildDone(items)) {
             return CollectionState.ITERATION_CHILD_DONE;
         }
@@ -262,14 +242,6 @@ export class TaskTreeIterator {
     someIterationChildDone(ids: number[]): boolean {
         const items = ids.map(id=>this.visitCache.get(id));
         return items.some((item)=>(item?.visitState === VisitState.ITERATION_CHILD_DONE));
-    }
-
-    /**
-     * Items are either done or filtered, never open or iteration_done
-     * @param ids 
-     */
-    isComplete(ids: number[]): boolean {
-        return ids.map(id=>this.visitCache.get(id)).every((item)=>(item?.visitState === VisitState.DONE || item?.filtered))
     }
 
     /** 

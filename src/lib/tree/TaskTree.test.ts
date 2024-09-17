@@ -18,7 +18,7 @@ import type { Task, TaskMap, TaskStore } from "./TaskTree"
  */
 
   const taskMap: TaskMap = {
-    1: {id: 1, children: [2, 4, 10], dependencies: [], priority: 100, take: Take.ONE},
+    1: {id: 1, children: [2, 4, 10], dependencies: [], priority: 100 },
     2: {id: 2, children: [3,11], dependencies: [], priority: 5, take: Take.ONE},
     3: {id: 3, children: [], dependencies: [10], priority: 1},
     4: {id: 4, children: [8], dependencies: [], priority: 1},
@@ -53,15 +53,15 @@ function prSt(state: CollectionState){
             return "FOUND" 
             break;
         case CollectionState.ITERATION_CHILD_DONE:
-            return "FOUND" 
+            return "ITERATION_CHILD_DONE" 
             break;
         default:
             throw new Error(`Unhandled state: ${state}`);
     }
 }
 
-const dig = () => {
-    const t = new TaskTreeIterator(taskStore);
+const dig = (taskTreeIterator: TaskTreeIterator, auto = true) => {
+    const t = taskTreeIterator;
     const foundItems: number[] = [];
 
     const checkFilters = (providedFilter: (queryItem: Task)=>boolean, parentId = 0) => {
@@ -85,6 +85,9 @@ const dig = () => {
         // console.log('next child', parentId, item)
         if(!item){
             const eval_status = t.evaluateItemStatus(parentId);
+            if(!auto && parentId === 0) {
+                return eval_status;
+            }
             if (eval_status === CollectionState.ITERATION_CHILD_DONE) {
                 t.resetIterationChildDoneCounts(parentId);
                 t.resetIterationDoneCounts(parentId);
@@ -153,6 +156,20 @@ test('test', ()=>{
 })
 
 test('test', ()=>{
-    const d = dig()
-    expect(d).toEqual([3, 7, 9, 7, 10, 7, 11, 7, 9, 7, 10]);
+    const t = new TaskTreeIterator(taskStore);
+    const d = dig(t)
+    expect(d).toEqual([3, 9, 10, 7, 11, 9, 10, 7, 3, 9, 10]);
+})
+test('test non auto', ()=>{
+    const t = new TaskTreeIterator(taskStore);
+    let d = dig(t, false)
+    expect(d).toEqual([3, 9, 10, 7]);
+    t.resetIterationChildDoneCounts();
+    t.resetIterationDoneCounts();
+    d = dig(t, false)
+    expect(d).toEqual([11, 9, 10, 7]);
+    t.resetIterationChildDoneCounts();
+    t.resetIterationDoneCounts();
+    d = dig(t, false)
+    expect(d).toEqual([3, 9, 10, 7]);
 })
