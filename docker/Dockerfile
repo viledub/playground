@@ -1,4 +1,4 @@
-FROM node:20.11-alpine AS external-website
+FROM node:20.11-alpine AS build
 WORKDIR /app
 
 COPY package*.json .
@@ -7,9 +7,14 @@ COPY . .
 
 # Build SvelteKit app
 RUN npm run build
+RUN npm prune --production
 
-RUN rm -rf src/ 
+FROM node:20.11-alpine AS run
+COPY --from=build /app/build ./build
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/node_modules ./node_modules
+RUN ulimit -c unlimited
+
 
 USER node:node
-
-CMD ["node","build/index.js"]
+ENTRYPOINT ["node", "build"]

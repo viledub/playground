@@ -1,0 +1,17 @@
+
+
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./test-nginx-conf:/etc/nginx/conf.d
+    networks:
+      - app_network
+    ports:
+      - "8081:80"
+
+networks:
+  app_network:
+    name: ${NETWORK_NAME}
