@@ -6,23 +6,18 @@ services:
   pocketbase:
     image: ghcr.io/muchobien/pocketbase:latest
     restart: always
-    command:
-      - pocketbase
-      - serve
-      - --http
-      - 0.0.0.0:8090
-      - --dir
-      - /data
     networks:
       - app_network
     ports:
       - "8090:8090"
     volumes:
-      - ./pocketbase:/data
+      - ./pocketbase:/pb_data
   sveltekit:
     image: ghcr.io/viledub/playground:tag
     networks:
       - app_network
+    ports:
+      - "7777:3000"
     environment:
       - POCKETBASE_URL=http://pocketbase:8090
 
