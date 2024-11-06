@@ -53,7 +53,7 @@ jobs:
         host: ${{ secrets.SERVER_IP }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
-        source: "docker-compose-app.yaml"
+        source: "./docker-compose-app.yaml"
         target: "/home/${{ secrets.SERVER_USER }}/dev/docker-compose-app.yml"
     - name: Deploy apps
       uses: appleboy/ssh-action@v0.1.3
